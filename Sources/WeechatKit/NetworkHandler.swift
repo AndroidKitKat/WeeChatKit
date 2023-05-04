@@ -2,11 +2,14 @@ import NIO
 import NIOWebSocket
 import Foundation
 
-public class SimpleDispatcher {
+public class NetworkHandler {
     private let group: MultiThreadedEventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     private var channel: Channel?
 
-    public static let `default` = SimpleDispatcher()
+    public static let `default`: NetworkHandler = NetworkHandler()
+    
+    public var connected: Bool = false
+    private var timeout: Double = 3.0
 
     public init() {}
     
@@ -20,26 +23,49 @@ public class SimpleDispatcher {
                 return channel.eventLoop.makeSucceededFuture(())
             }
         channel = try bootstrap.connect(host: "localhost", port: 9001).wait()
-    }
-
-    public func waitForHangup() throws {
-        try channel?.closeFuture.wait()
+        connected = true
     }
     
     public func stop() throws {
         try group.syncShutdownGracefully()
     }
+
+    public func waitForHangup() throws {
+        try channel?.closeFuture.wait()
+    }
+
+    // Send function that sends a string message to the server
+    // if the write succeeds, return true, else return false
+    public func send(_ message: String) -> Bool {
+        // this ensures that the channel is at least a thing
+        guard let channel = channel else {
+            return false
+        }
+        var buffer: ByteBuffer = channel.allocator.buffer(capacity: message.utf8.count)
+        buffer.writeString(message)
+        do {
+            try channel.writeAndFlush(buffer).wait()
+            return true
+        } catch {
+            return false
+        }
+    }
+    
 }
 
 class SimpleHandler: ChannelInboundHandler {
     typealias InboundIn = ByteBuffer
+    typealias OutboundOut = ByteBuffer
     
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         var buffer: SimpleHandler.InboundIn = self.unwrapInboundIn(data)
-        if let response = buffer.readString(length: buffer.readableBytes) {
+        if let response: String = buffer.readString(length: buffer.readableBytes) {
             print(response.trimmingCharacters(in: .whitespacesAndNewlines))
         }
     }
+
+    // send a message to the server when the connection is established
+
     
     func channelInactive(context: ChannelHandlerContext) {
         print("well that's all folks")
@@ -47,61 +73,3 @@ class SimpleHandler: ChannelInboundHandler {
     }
 }
 
-// // public final class NetworkHandler: ChannelInboundHandler {
-
-//     // public static let `default`: NetworkHandler = NetworkHandler()
-//     private var group: MultiThreadedEventLoopGroup?
-//     private var channel: Channel?
-//     // private var buffer: ByteBuffer = ByteBufferAllocator().buffer(capacity: 0)
-
-//     public typealias InboundIn = ByteBuffer
-//     public typealias InboundOut = ByteBuffer
-
-
-//     public func connect() throws {
-//         group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-//         let bootstrap: ClientBootstrap = ClientBootstrap(group: group!)
-//             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
-//             .channelInitializer { channel in 
-//                 channel.pipeline.addHandler(Dispatcher())
-//         }
-
-//         channel = try bootstrap.connect(host: "localhost", port: 9001).wait()
-//     }
-
-//     public func disconnect() throws {
-//         print("Disconnecting...")
-//         try channel?.close().wait()
-//         try group?.syncShutdownGracefully()
-//     }
-
-//     public func channelActive(context: ChannelHandlerContext) {
-//         print("connected to \(context.remoteAddress!)")
-//         self.channel = context.channel
-//     }
-
-//     public func channelInactive(context: ChannelHandlerContext) throws {
-//         print("disconnected from \(context.remoteAddress!)")
-//         try disconnect()
-//         self.channel = nil
-//     }
-
-//     private class Dispatcher: ChannelInboundHandler {
-//         typealias InboundIn = ByteBuffer
-
-//         func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-//             let buffer: NetworkHandler.Dispatcher.InboundIn = unwrapInboundIn(data)
-
-//             if let message: String = buffer.getString(at: buffer.readerIndex, length: buffer.readableBytes)
-//             {
-//                 print(message.trimmingCharacters(in: .newlines))
-//             }
-//         }
-
-//         // close the connection if the other side hangs up
-//         func channelInactive(context: ChannelHandlerContext) {
-//             context.close(promise: nil)
-//             print("you are done!")
-//         }
-//     }
-// }
