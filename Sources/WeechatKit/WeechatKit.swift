@@ -1,6 +1,8 @@
 public struct WeechatKit {
-    public private(set) var text = "Hello, World!"
+
+    public var netHand: SimpleDispatcher
 
     public init() {
+         netHand = SimpleDispatcher()
     }
 }
