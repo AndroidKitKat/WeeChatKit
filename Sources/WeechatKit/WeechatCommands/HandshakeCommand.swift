@@ -1,9 +1,9 @@
 // Source: https://weechat.org/files/doc/stable/weechat_relay_protocol.en.html#command_handshake
 
-enum HandshakeOptions: String, CaseIterable {
-    case password_hash_algo
-    case compression
-}
+// enum HandshakeOptions: String, CaseIterable {
+//     case password_hash_algo
+//     case compression
+// }
 
 enum PasswordHashAlgos: String, CaseIterable, CustomStringConvertible {
     case plain
