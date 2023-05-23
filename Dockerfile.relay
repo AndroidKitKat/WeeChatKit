@@ -1,0 +1,6 @@
+# Build with: docker build -t weechatkit/relay:testing -f Dockerfile.relay .
+
+FROM docker.io/weechat/weechat:latest
+
+# Copy in the relay config
+COPY --chown=user:user basic-relay.conf /home/user/.config/weechat/relay.conf
