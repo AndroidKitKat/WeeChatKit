@@ -9,10 +9,18 @@ protocol WeechatCommand {
     var arguments: String { get }    
 }
 
-extension WeechatCommand {
-    // func buildArguments() TODO
+func buildArgumentString<T: WeechatCommandArgument>(for enums: [T]) -> String where T.RawValue: CustomStringConvertible {
+    let description: String = enums.description
+    var values: [String] = []
+    
+    for value: T in enums {
+        let val: String = String(describing: value.rawValue)
+        values.append(val)
+    }
+    return "\(description)=\(values.joined(separator: ":"))"
 }
 
+protocol WeechatCommandArgument: RawRepresentable, CustomStringConvertible {}
 
 enum Command: String, CaseIterable {
     case handshake      // Prepare client auth and set options, before init

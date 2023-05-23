@@ -22,7 +22,7 @@ public class NetworkHandler {
                 _ = pipeline.addHandler(handler)
                 return channel.eventLoop.makeSucceededFuture(())
             }
-        channel = try bootstrap.connect(host: "localhost", port: 9001).wait()
+        channel = try bootstrap.connect(host: "localhost", port: 9000).wait()
         connected = true
     }
     

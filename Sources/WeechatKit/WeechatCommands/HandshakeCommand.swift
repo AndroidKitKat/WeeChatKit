@@ -17,6 +17,8 @@ enum PasswordHashAlgos: String, CaseIterable, CustomStringConvertible {
     }
 }
 
+extension PasswordHashAlgos: WeechatCommandArgument {}
+
 enum CompressionAlgos: String, CaseIterable, CustomStringConvertible {
     case off
     case zlib
@@ -26,15 +28,17 @@ enum CompressionAlgos: String, CaseIterable, CustomStringConvertible {
     }
 }
 
+extension CompressionAlgos: WeechatCommandArgument {}
+
 struct HandshakeCommand: WeechatCommand {
     let id: String
     let command: Command = .handshake
     let arguments: String
     
-    init(id: String, passwordHashAlgo: [PasswordHashAlgos], compressionAlgo: [CompressionAlgos]) {
-        self.id = id
-        // arguments should be [<option>=<value>,<option>=<value>,...]
-
-
-    }
+    // init(id: String, passwordHashAlgos: [any WeechatCommandArgument], compressionAlgos: [any WeechatCommandArgument]) {
+    //     self.id = self.command.rawValue
+    //     // let asdf = passwordHashAlgos + compressionAlgos
+    //     // /self.arguments = 
+    // }
 }
+// MARK
