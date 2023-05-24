@@ -6,8 +6,16 @@
 public protocol WeeChatCommand {
     var id: String { get }
     var command: Command { get }
-    var arguments: String { get }    
+    var arguments: String { get }
 }
+
+extension WeeChatCommand {
+    public var id: String {
+        return "weechatkit"
+    }
+}
+
+
 
 func buildArgumentString<T: WeeChatCommandArgument>(for enums: [T]) -> String where T.RawValue: CustomStringConvertible {
     let description: String = enums[0].description

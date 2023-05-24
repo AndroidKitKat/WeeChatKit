@@ -31,12 +31,10 @@ public enum CompressionAlgos: String, CaseIterable, CustomStringConvertible {
 extension CompressionAlgos: WeeChatCommandArgument {}
 
 public struct HandshakeCommand: WeeChatCommand {
-    public let id: String
     public let command: Command = .handshake
     public let arguments: String
     
-    public init(id: String = String(Int.random(in: 0..<1_000_000_00)) , passwordHashAlgos: [PasswordHashAlgos], compressionAlgos: [CompressionAlgos]) {
-        self.id = id
+    public init(passwordHashAlgos: [PasswordHashAlgos], compressionAlgos: [CompressionAlgos]) {
         // join build argument string with a comma
         self.arguments = buildArgumentString(for:passwordHashAlgos) + "," + buildArgumentString(for:compressionAlgos)
     }

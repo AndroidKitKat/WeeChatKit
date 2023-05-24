@@ -1,7 +1,7 @@
 // Source: https://weechat.org/files/doc/devel/weechat_relay_protocol.en.html#messages
 
 /*
- * length - 4 bytes
+ * length - 4 bytes UInt32
  * compression - 1 byte
  *      - 0x00: no compression
  *      - 0x01: zlib
@@ -16,3 +16,6 @@
  * object - ??? bytes
  */
 
+struct WeeChatMessage {
+    let size: UInt32
+}
