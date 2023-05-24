@@ -69,12 +69,22 @@ class SimpleHandler: ChannelInboundHandler {
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         var buffer: SimpleHandler.InboundIn = self.unwrapInboundIn(data)
 
-        print(buffer.readableBytes)
-        if let bytes = buffer.readBytes(length: buffer.readableBytes) {
+        if var bytes = buffer.readBytes(length: buffer.readableBytes) {
             // print("My Length: \(buffer.readableBytes)")
-            for byte in bytes[0...3] {
-                print(String(format: "%02X", byte))
+            let size = bytes.consumeFirst(4).reduce(0) { soFar, byte in
+                return soFar << 8 | UInt32(byte)
             }
+            
+            let compression = bytes.consumeFirst(1).reduce(0) { soFar, byte in
+                return soFar << 8 | UInt32(byte)
+            }
+//
+//            let compression = bytes.dropFirst(1).reduce(0) { soFar, byte in
+//                return soFar << 8 | UInt32(byte)
+//            }
+
+            print(String(size, radix: 10))
+            print(String(compression, radix: 16))
         }
 
         // if let response: String = buffer.readString(length: buffer.readableBytes) {
@@ -88,6 +98,15 @@ class SimpleHandler: ChannelInboundHandler {
     func channelInactive(context: ChannelHandlerContext) {
         print("well that's all folks")
         context.close(promise: nil)
+    }
+}
+
+extension Array {
+    mutating func consumeFirst(_ count: Int) -> ArraySlice<Element> {
+        let range = 0..<Swift.min(count, self.count)
+        let slice = self[range]
+        self.removeFirst(range.count)
+        return slice
     }
 }
 
