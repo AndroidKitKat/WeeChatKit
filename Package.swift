@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "WeechatKit",
+    name: "WeeChatKit",
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "WeechatKit",
-            targets: ["WeechatKit"]),
+            name: "WeeChatKit",
+            targets: ["WeeChatKit"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -22,7 +22,7 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
-            name: "WeechatKit",
+            name: "WeeChatKit",
             dependencies: [
                 .product(name: "NIO", package: "swift-nio"), 
                 .product(name: "NIOWebSocket", package: "swift-nio"),
@@ -30,7 +30,7 @@ let package = Package(
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services")
             ]),
         .testTarget(
-            name: "WeechatKitTests",
-            dependencies: ["WeechatKit"]),
+            name: "WeeChatKitTests",
+            dependencies: ["WeeChatKit"]),
     ]
 )

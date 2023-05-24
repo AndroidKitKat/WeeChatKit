@@ -50,6 +50,15 @@ public class NetworkHandler {
             return false
         }
     }
+
+    public func send(command: WeeChatCommand) -> Bool {
+        let message: String = "(\(command.id)) \(command.command.rawValue) \(command.arguments)\n"
+        return send(message)
+    }
+
+    public func sendWeeChatHandshake(_ handshake: HandshakeCommand) -> Bool {
+        return send(command: handshake) 
+    }
     
 }
 
@@ -59,9 +68,18 @@ class SimpleHandler: ChannelInboundHandler {
     
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         var buffer: SimpleHandler.InboundIn = self.unwrapInboundIn(data)
-        if let response: String = buffer.readString(length: buffer.readableBytes) {
-            print(response.trimmingCharacters(in: .whitespacesAndNewlines))
+
+        print(buffer.readableBytes)
+        if let bytes = buffer.readBytes(length: buffer.readableBytes) {
+            // print("My Length: \(buffer.readableBytes)")
+            for byte in bytes[0...3] {
+                print(String(format: "%02X", byte))
+            }
         }
+
+        // if let response: String = buffer.readString(length: buffer.readableBytes) {
+        //     print(response.trimmingCharacters(in: .whitespacesAndNewlines))
+        // }
     }
 
     // send a message to the server when the connection is established

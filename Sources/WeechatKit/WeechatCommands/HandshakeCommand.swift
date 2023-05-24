@@ -5,40 +5,40 @@
 //     case compression
 // }
 
-enum PasswordHashAlgos: String, CaseIterable, CustomStringConvertible {
+public enum PasswordHashAlgos: String, CaseIterable, CustomStringConvertible {
     case plain
     case sha256
     case sha512
     case pbkdf2_sha256 = "pbkdf2+sha256"
     case pbkdf2_sha512 = "pbkdf2+sha512"
 
-    var description: String {
+    public var description: String {
         return "password_hash_algo"
     }
 }
 
-extension PasswordHashAlgos: WeechatCommandArgument {}
+extension PasswordHashAlgos: WeeChatCommandArgument {}
 
-enum CompressionAlgos: String, CaseIterable, CustomStringConvertible {
+public enum CompressionAlgos: String, CaseIterable, CustomStringConvertible {
     case off
     case zlib
     case zstd
-    var description: String {
+    public var description: String {
         return "compression"
     }
 }
 
-extension CompressionAlgos: WeechatCommandArgument {}
+extension CompressionAlgos: WeeChatCommandArgument {}
 
-struct HandshakeCommand: WeechatCommand {
-    let id: String
-    let command: Command = .handshake
-    let arguments: String
+public struct HandshakeCommand: WeeChatCommand {
+    public let id: String
+    public let command: Command = .handshake
+    public let arguments: String
     
-    // init(id: String, passwordHashAlgos: [any WeechatCommandArgument], compressionAlgos: [any WeechatCommandArgument]) {
-    //     self.id = self.command.rawValue
-    //     // let asdf = passwordHashAlgos + compressionAlgos
-    //     // /self.arguments = 
-    // }
+    public init(id: String = String(Int.random(in: 0..<1_000_000_00)) , passwordHashAlgos: [PasswordHashAlgos], compressionAlgos: [CompressionAlgos]) {
+        self.id = id
+        // join build argument string with a comma
+        self.arguments = buildArgumentString(for:passwordHashAlgos) + "," + buildArgumentString(for:compressionAlgos)
+    }
 }
 // MARK

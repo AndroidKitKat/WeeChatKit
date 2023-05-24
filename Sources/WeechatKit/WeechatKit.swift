@@ -1,4 +1,4 @@
-public struct WeechatKit {
+public struct WeeChatKit {
 
     public init() {
     }

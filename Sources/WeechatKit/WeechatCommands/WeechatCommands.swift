@@ -3,14 +3,15 @@
 // Commands have the format:
 // (id) command arguments\n
 
-protocol WeechatCommand {
+public protocol WeeChatCommand {
     var id: String { get }
     var command: Command { get }
     var arguments: String { get }    
 }
 
-func buildArgumentString<T: WeechatCommandArgument>(for enums: [T]) -> String where T.RawValue: CustomStringConvertible {
-    let description: String = enums.description
+func buildArgumentString<T: WeeChatCommandArgument>(for enums: [T]) -> String where T.RawValue: CustomStringConvertible {
+    let description: String = enums[0].description
+    print(description)
     var values: [String] = []
     
     for value: T in enums {
@@ -20,9 +21,9 @@ func buildArgumentString<T: WeechatCommandArgument>(for enums: [T]) -> String wh
     return "\(description)=\(values.joined(separator: ":"))"
 }
 
-protocol WeechatCommandArgument: RawRepresentable, CustomStringConvertible {}
+protocol WeeChatCommandArgument: RawRepresentable, CustomStringConvertible {}
 
-enum Command: String, CaseIterable {
+public enum Command: String, CaseIterable {
     case handshake      // Prepare client auth and set options, before init
     case `init`         // Authenticate with relay
     case hdata          // Request a hdata

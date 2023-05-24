@@ -1,8 +1,8 @@
-# WeechatKit
+# WeeChatKit
 
-Beginnings of a Swift framework for Weechat Relay Protocol.
+Beginnings of a Swift framework for WeeChat Relay Protocol.
 
-This project is in no way affiliated with the Weechat project. All rights to the Weechat name and belong to the Weechat project and its contributors at https://weechat.org.
+This project is in no way affiliated with the WeeChat project. All rights to the WeeChat name and belong to the WeeChat project and its contributors at https://weechat.org.
 
 ## Status
 Don't use this yet. It's not ready. I might not even finish it.
