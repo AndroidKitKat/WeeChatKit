@@ -69,8 +69,8 @@ class SimpleHandler: ChannelInboundHandler {
     
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         var buffer: SimpleHandler.InboundIn = self.unwrapInboundIn(data)
-        
-        print("Correct size: \(String(buffer.readableBytes, radix:10))")
+
+        let copiedBuffer = copy(buffer)
         
         guard let rawBytes = buffer.readBytes(length: buffer.readableBytes) else {
             return
@@ -84,7 +84,7 @@ class SimpleHandler: ChannelInboundHandler {
         print(size)
         
         let compressionFlag = bytes.consume()
-        print(compressionFlag)
+        print(compressionFlag[0])
         
 //        if var bytes = Data(rawBytes) {
 //

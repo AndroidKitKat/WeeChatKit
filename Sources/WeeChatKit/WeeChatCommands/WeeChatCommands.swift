@@ -19,7 +19,6 @@ extension WeeChatCommand {
 
 func buildArgumentString<T: WeeChatCommandArgument>(for enums: [T]) -> String where T.RawValue: CustomStringConvertible {
     let description: String = enums[0].description
-    print(description)
     var values: [String] = []
     
     for value: T in enums {
