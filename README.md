@@ -1,3 +1,6 @@
+# This project has left GitHub!
+You can find this project at https://michaeleisemann.com/source/weechatkit
+
 # WeeChatKit
 
 Beginnings of a Swift framework for WeeChat Relay Protocol.
