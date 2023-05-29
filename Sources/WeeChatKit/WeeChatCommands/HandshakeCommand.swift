@@ -39,4 +39,3 @@ public struct HandshakeCommand: WeeChatCommand {
         self.arguments = buildArgumentString(for:passwordHashAlgos) + "," + buildArgumentString(for:compressionAlgos)
     }
 }
-// MARK
