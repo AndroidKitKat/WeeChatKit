@@ -1,3 +1,3 @@
 # WeeChatKit
 
-A description of this package.
+Simple (non-functional) WeeChat Relay Library
