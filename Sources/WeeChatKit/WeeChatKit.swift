@@ -1,5 +1,5 @@
 public struct WeeChatKit {
-    public private(set) var text = "Hello, World!"
+    public private(set) var text = "Hello, WeeChat!"
 
     public init() {
     }
