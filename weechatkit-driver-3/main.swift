@@ -16,7 +16,7 @@ func main() async throws {
     let communicator = WeeChatKit(eventLoopGroup: eventLoopGroup)
 
     // Connect to the server
-    try await communicator.connect(host: "localhost", port: 8901)
+    try await communicator.connect(to: "localhost", on: 8901)
     print("Connected to server. You can start sending messages.")
 
     // Start receiving messages in the background
@@ -62,7 +62,7 @@ do {
     try await main()
 } catch {
     print("Error: \(error)")
-    exit(5)
+    exit(69)
 }
 
 
