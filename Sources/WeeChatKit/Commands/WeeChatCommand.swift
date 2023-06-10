@@ -41,15 +41,47 @@ extension WeeChatCommand {
     }
     
     var rawValue: String {
-        return "\(id) \(String(reflecting: command)) \(arguments)\n"
+        return "(\(id)) \(command.description) \(arguments)\n"
     }
     
 }
 
-enum Command {
-    case handshake, `init`, hdata, info, infolist, nicklist, input, completion, sync, desync, quit
+enum Command: CustomStringConvertible {
+    case handshake, initialize, hdata, info, infolist, nicklist, input, completion, sync, desync, quit
+    
+    var description: String {
+        switch self {
+        case .handshake:
+            "handshake"
+        case .initialize:
+            "init"
+        case .hdata:
+            "hdata"
+        case .info:
+            "info"
+        case .infolist:
+            "infolist"
+        case .nicklist:
+            "nicklist"
+        case .input:
+            "input"
+        case .completion:
+            "completion"
+        case .sync:
+            "sync"
+        case .desync:
+            "desync"
+        case .quit:
+            "quit"
+        }
+    }
 }
 
 
 
 
+extension Array where Element: CustomStringConvertible {
+    func joinedDescription(separator: String) -> String {
+        return map { $0.description }.joined(separator: separator)
+    }
+}

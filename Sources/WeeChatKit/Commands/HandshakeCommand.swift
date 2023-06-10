@@ -8,15 +8,15 @@
 
 struct HandshakeCommand: WeeChatCommand {
     var arguments: String
-    var command: Command
+    let command: Command = .handshake
     
     init(hashAlgos: [HandshakeHashAlgos], compressionModes: [HandshakeCompressionModes]) {
-        self.command = .handshake
+        let argumentComponents = [
+            hashAlgos.isEmpty ? nil : "password_hash_algo=" + hashAlgos.joinedDescription(separator: ":"),
+            compressionModes.isEmpty ? nil : "compression=" + compressionModes.joinedDescription(separator: ":")
+        ].compactMap { $0 }
         
-        arguments = [
-            hashAlgos.isEmpty ? "" : "password_hash_algo=" + hashAlgos.map { $0.description }.joined(separator: ":"),
-            compressionModes.isEmpty ? "" : "compression=" + compressionModes.map { $0.description }.joined(separator: ":")
-        ].joined(separator: ",")
+        arguments = argumentComponents.joined(separator: ",")
     }
 }
 

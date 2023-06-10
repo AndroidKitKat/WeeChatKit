@@ -1,5 +1,6 @@
 import NIO
 import NIOConcurrencyHelpers
+import Foundation
 
 public final class WeeChatKit {
     private let eventLoopGroup: EventLoopGroup
@@ -17,6 +18,7 @@ public final class WeeChatKit {
             }
 
         channel = try await bootstrap.connect(host: host, port: port).get()
+        
     }
 
     public func disconnect() async throws {
@@ -57,11 +59,47 @@ class SocketHandler: ChannelInboundHandler {
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         var receivedData = unwrapInboundIn(data)
-        guard let rawBytes = receivedData.readBytes(length: receivedData.readableBytes) else {
+        guard let rawBytes: [UInt8] = receivedData.readBytes(length: receivedData.readableBytes) else {
             return
         }
         
-        print(rawBytes)
+        var bytes: Data = Data(rawBytes)
+        // MARK: Message header
+        let messageLength: UInt32 = bytes.consume(first: 4).reduce(0) { soFar, byte in
+            return soFar << 8 | UInt32(byte)
+        }
+        print(messageLength)
+        
+        var messageData: Data
+        switch bytes.consume()[0] {
+        case 0:
+            print("none")
+            messageData = bytes
+        default:
+            print("Compressed data encountered!")
+            return
+//        case 1:
+//            print("zlib")
+//            break
+//        case 2:
+//            print("zstd")
+//            break
+//        default:
+//            print("idk")
+        }
+        
+        // MARK: Message ID handling
+        
+        let idLength: UInt32 = messageData.consume(first: 4).reduce(0){ soFar, byte in
+            return soFar << 8 | UInt32(byte)
+        }
+        
+        let messageId: String = String(decoding: messageData.consume(first: Int(idLength)), as: UTF8.self)
+        
+        // MARK: Message delegate
+        
+         
+        
     }
 }
 
@@ -83,5 +121,23 @@ class ReadDataHandler: ChannelInboundHandler, RemovableChannelHandler {
         let receivedData = unwrapInboundIn(data)
         promise.succeed(receivedData)
         _ = context.pipeline.removeHandler(self)
+    }
+}
+
+extension Data {
+    mutating func consume(first count: Int ) -> Data {
+        let prefixData = self.prefix(count)
+        self.removeFirst(count)
+        return Data(prefixData)
+    }
+    
+    mutating func consume(last count: Int) -> Data {
+        let suffixData = self.suffix(count)
+        self.removeLast(count)
+        return Data(suffixData)
+    }
+    
+    mutating func consume() -> Data {
+        return consume(first: 1)
     }
 }
