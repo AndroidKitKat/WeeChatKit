@@ -64,16 +64,21 @@ class SocketHandler: ChannelInboundHandler {
         }
         
         var bytes: Data = Data(rawBytes)
+        print("Incoming bytes of size \(bytes.count)")
+        print(String(decoding: bytes, as: UTF8.self))
         // MARK: Message header
-        let messageLength: UInt32 = bytes.consume(first: 4).reduce(0) { soFar, byte in
-            return soFar << 8 | UInt32(byte)
+        let messageLength: Int32 = bytes.consume(first: 4).reduce(0) { soFar, byte in
+            return soFar << 8 | Int32(byte)
         }
-        print(messageLength)
-        
+        print("Size I got: \(messageLength)")
+                
         var messageData: Data
-        switch bytes.consume()[0] {
+        let compressionFlag = bytes.consume().reduce(0) { soFar, byte in
+            return soFar << 8 | Int8(byte)
+        }
+        switch compressionFlag {
         case 0:
-            print("none")
+//            print("none")
             messageData = bytes
         default:
             print("Compressed data encountered!")
@@ -96,7 +101,12 @@ class SocketHandler: ChannelInboundHandler {
         
         let messageId: String = String(decoding: messageData.consume(first: Int(idLength)), as: UTF8.self)
         
+        print("Incoming message with id: \(messageId)")
+        
         // MARK: Message delegate
+        
+        print(String(decoding: messageData, as: UTF8.self))
+        print("Done with that message")
         
          
         

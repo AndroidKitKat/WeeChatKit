@@ -8,7 +8,22 @@
 import Foundation
 
 
-enum WCKVariable: CustomStringConvertible {
+protocol WCKObject {
+    var type: WCKVariableType { get }
+}
+//
+//extension WCKObject {
+//    var id: UUID {
+//        UUID()
+//    }
+//    
+//    func hash(into hasher: inout Hasher) {
+//        hasher.combine(id)
+//        hasher.combine(type.rawValue)
+//    }
+//}
+
+enum WCKVariableType: String, CustomStringConvertible {
     case chr, int, lon, str, buf, ptr, tim, htb, hda, inf, inl, arr
     
     var description: String {
@@ -42,15 +57,15 @@ enum WCKVariable: CustomStringConvertible {
 }
 
 /// A simple one-byte char
-struct WCKChar {
+struct WCKChar: WCKObject {
     let value: Int8
-    let type: WCKVariable = .chr
+    let type: WCKVariableType = .chr
 }
 
 /// Signed 32-bit (4 byte) integers, encoded as big-endian (most significant byte first)
-struct WCKInteger {
+struct WCKInteger: WCKObject {
     let value: Int32
-    let type: WCKVariable = .int
+    let type: WCKVariableType = .int
     
     init(data: inout Data) {
         value = data.consume(first: 4).reduce(0) { soFar, byte in
@@ -66,9 +81,9 @@ struct WCKInteger {
 
 
 /// A signed long integer is encoded as a string, with length on one byte.
-struct WCKLongInteger {
+struct WCKLongInteger: WCKObject {
     let value: Int64
-    let type: WCKVariable = .lon
+    let type: WCKVariableType = .lon
     
     init?(data: inout Data) {
         let longLength = data.consume().reduce(0) { soFar, byte in
@@ -86,9 +101,9 @@ struct WCKLongInteger {
 }
 
 /// A string is a length (integer on 4 bytes) + content of string (without final \0).
-struct WCKString {
+struct WCKString: WCKObject {
     let value: String?
-    let type: WCKVariable = .str
+    let type: WCKVariableType = .str
     
     init(data: inout Data) {
         let stringLength = data.consume(first: 4).reduce(0) { soFar, byte in
@@ -111,9 +126,9 @@ struct WCKString {
 }
 
 /// Same format as string; content is just an array of bytes.
-struct WCKBuffer {
+struct WCKBuffer: WCKObject {
     let value: [UInt8]?
-    let type: WCKVariable = .buf
+    let type: WCKVariableType = .buf
     
     init(data: inout Data) {
         let bufferLength = data.consume(first: 4).reduce(0) { soFar, byte in
@@ -138,9 +153,9 @@ struct WCKBuffer {
 
 
 /// A pointer is encoded as string (hex), with length on one byte.
-struct WCKPointer {
+struct WCKPointer: WCKObject {
     let value: String
-    let type: WCKVariable = .ptr
+    let type: WCKVariableType = .ptr
     
     init(data: inout Data) {
         let pointerLength = data.consume().reduce(0) { soFar, byte in
@@ -157,11 +172,11 @@ struct WCKPointer {
 
 
 /// A time (number of seconds) is encoded as a string, with length on one byte.
-struct WCKTime {
+struct WCKTime: WCKObject {
     let value: String
-    let type: WCKVariable = .tim
+    let type: WCKVariableType = .tim
     
-    init(size: Int, data: inout Data) {
+    init(data: inout Data) {
         let timeLength = data.consume().reduce(0) { soFar, byte in
             return soFar << 8 | Int8(byte)
         }
@@ -175,36 +190,69 @@ struct WCKTime {
 }
 
 /// A hashtable contains type for keys, type for values, number of items in hashtable (integer on 4 bytes), and then keys and values of items.
-struct WCKHashtable {
+struct WCKHashtable: WCKObject {
+    let type: WCKVariableType = .htb
+    let keyType: WCKVariableType
+    let valueType: WCKVariableType
+    let count: WCKInteger
+    var items: [WCKVariableType: WCKObject] = [:]
+    
+    init?(data: inout Data) {
+        guard let newKeyType = WCKVariableType(rawValue: String(decoding:data.consume(first: 3), as: UTF8.self)) else { return nil }
+        guard let newValueType = WCKVariableType(rawValue: String(decoding:data.consume(first: 3), as: UTF8.self)) else { return nil }
+        
+        keyType = newKeyType
+        valueType = newValueType
+        count = WCKInteger(data: &data)
+    }
+    
 }
 
 /// A hdata contains a path with hdata names, list of keys, number of set of objects, and then set of objects (path with pointers, then objects).
-struct WCKHdata {}
-
-
-/// A info contains a name and a value (both are strings).
-struct WCKInfo {
-    let name: WCKString
-    let value: WCKString
-    let type: WCKVariable = .inf
+struct WCKHdata: WCKObject {
+    let type: WCKVariableType = .hda
     
-    init(name: WCKString, value: WCKString) {
-        self.name = name
-        self.value = value
-    }
+    
 }
+
+struct WCKArray: WCKObject {
+    let type: WCKVariableType = .arr
+    let itemType: WCKVariableType
+    let length: WCKInteger
+    
+    
+}
+
+
+// MARK: It seems that the weechat documentation doesn't really do infos anymore
+/// A info contains a name and a value (both are strings).
+//struct WCKInfo: WCKObject {
+//    let name: WCKString
+//    let value: WCKString
+//    let type: WCKVariableType = .inf
+//    
+//    init(name: WCKString, value: WCKString) {
+//        self.name = name
+//        self.value = value
+//    }
+//}
 
 /// A infolist contains a name, number of items, and then items (set of variables).
-struct WCKInfolist {
-    let name: WCKString
-    let count: WCKInteger
-    let type: WCKVariable = .inl
-    
-}
-
-/// An infolist is an item that belongs in an info list
-struct WCKInfoListItem {
-    let count: WCKInteger
-    let name: WCKString
-    let type: WCKVariable
-}
+//struct WCKInfolist: WCKObject {
+//    let name: WCKString
+//    let count: WCKInteger
+//    let items: [WCKInfoListItem]
+//    let type: WCKVariableType = .inl
+//    
+//}
+//
+///// An infolist is an item that belongs in an info list
+//struct WCKInfoListItem {
+//    let count: WCKInteger
+//    let name: WCKString
+//    let type: WCKVariableType
+//    let value: WCKObject
+//    
+//    
+//
+//}
