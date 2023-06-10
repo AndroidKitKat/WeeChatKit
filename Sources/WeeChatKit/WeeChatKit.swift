@@ -9,7 +9,7 @@ public final class WeeChatKit {
         self.eventLoopGroup = eventLoopGroup
     }
 
-    public func connect(host: String, port: Int) async throws {
+    public func connect(to host: String, on port: Int) async throws {
         let bootstrap = ClientBootstrap(group: eventLoopGroup)
             .channelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             .channelInitializer { channel in
