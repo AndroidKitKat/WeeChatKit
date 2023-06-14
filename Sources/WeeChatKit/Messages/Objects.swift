@@ -7,103 +7,63 @@
 
 import Foundation
 
-
-protocol WCKObject {
-    var type: WCKVariableType { get }
-}
-//
-//extension WCKObject {
-//    var id: UUID {
-//        UUID()
-//    }
-//    
-//    func hash(into hasher: inout Hasher) {
-//        hasher.combine(id)
-//        hasher.combine(type.rawValue)
-//    }
-//}
-
-enum WCKVariableType: String, CustomStringConvertible {
+enum ObjectType: String {
     case chr, int, lon, str, buf, ptr, tim, htb, hda, inf, inl, arr
+}
+
+struct WCKChar: Hashable {
+    let value: UInt8
+    let type: ObjectType = .chr
     
-    var description: String {
-        switch self {
-        case .chr:
-            "chr"
-        case .int:
-            "int"
-        case .lon:
-            "lon"
-        case .str:
-            "str"
-        case .buf:
-            "buf"
-        case .ptr:
-            "ptr"
-        case .tim:
-            "tim"
-        case .htb:
-            "htb"
-        case .hda:
-            "hda"
-        case .inf:
-            "inf"
-        case .inl:
-            "inl"
-        case .arr:
-            "arr"
+    init(value: UInt8) {
+        self.value = value
+    }
+    
+    init (data: inout Data) {
+        self.value = data.consume().reduce(0) { soFar, byte in
+            return soFar << 8 | UInt8(byte)
         }
     }
 }
 
-/// A simple one-byte char
-struct WCKChar: WCKObject {
-    let value: Int8
-    let type: WCKVariableType = .chr
-}
-
-/// Signed 32-bit (4 byte) integers, encoded as big-endian (most significant byte first)
-struct WCKInteger: WCKObject {
+struct WCKInteger: Hashable {
     let value: Int32
-    let type: WCKVariableType = .int
+    let type: ObjectType = .int
+    
+    init(value: Int32) {
+        self.value = value
+    }
     
     init(data: inout Data) {
-        value = data.consume(first: 4).reduce(0) { soFar, byte in
+        self.value = data.consume(first: 4).reduce(0) { soFar, byte in
             return soFar << 8 | Int32(byte)
         }
     }
-    
-    init(_ val: Int32) {
-        value = val
-
-    }
 }
 
-
-/// A signed long integer is encoded as a string, with length on one byte.
-struct WCKLongInteger: WCKObject {
+struct WCKLongInteger: Hashable {
     let value: Int64
-    let type: WCKVariableType = .lon
+    let type: ObjectType = .lon
     
-    init?(data: inout Data) {
-        let longLength = data.consume().reduce(0) { soFar, byte in
-            return soFar << 8 | UInt8(byte)
-        }
-        
-        let longString = String(decoding: data.consume(first: Int(longLength)), as: UTF8.self)
-        guard let longInt = Int64(longString) else { return nil }
-        value = longInt
+    init(value: Int64) {
+        self.value = value
     }
     
-    init(_ val: Int64) {
-        value = val
+    init(data: inout Data) {
+        let longLength = data.consume().reduce(0) { soFar, byte in
+            return soFar << 8 | Int8(byte)
+        }
+        self.value = Int64(String(decoding: data.consume(first: Int(longLength)), as: UTF8.self))!
     }
 }
 
-/// A string is a length (integer on 4 bytes) + content of string (without final \0).
-struct WCKString: WCKObject {
+struct WCKString: Hashable {
     let value: String?
-    let type: WCKVariableType = .str
+    let type: ObjectType = .str
+    
+    init(value: String?) {
+        self.value = value
+    }
     
     init(data: inout Data) {
         let stringLength = data.consume(first: 4).reduce(0) { soFar, byte in
@@ -112,23 +72,22 @@ struct WCKString: WCKObject {
         
         switch stringLength {
         case 0:
-            value = ""
+            self.value = ""
         case -1:
-            value = nil
+            self.value = nil
         default:
-            value = String(decoding: data.consume(first: Int(stringLength)), as: UTF8.self)
+            self.value = String(decoding: data.consume(first: Int(stringLength)), as: UTF8.self)
         }
-    }
-    
-    init(_ val: String?) {
-        value = val
     }
 }
 
-/// Same format as string; content is just an array of bytes.
-struct WCKBuffer: WCKObject {
+struct WCKBuffer: Hashable {
     let value: [UInt8]?
-    let type: WCKVariableType = .buf
+    let type: ObjectType = .buf
+    
+    init(value: [UInt8]?) {
+        self.value = value
+    }
     
     init(data: inout Data) {
         let bufferLength = data.consume(first: 4).reduce(0) { soFar, byte in
@@ -137,122 +96,128 @@ struct WCKBuffer: WCKObject {
         
         switch bufferLength {
         case 0:
-            value = []
+            self.value = []
         case -1:
-            value = nil
+            self.value = nil
         default:
             let bufferData = data.consume(first: Int(bufferLength))
-            value = [UInt8](bufferData)
+            self.value = [UInt8](bufferData)
         }
     }
     
-    init(_ val: [UInt8]?) {
-        value = val
-    }
 }
 
-
-/// A pointer is encoded as string (hex), with length on one byte.
-struct WCKPointer: WCKObject {
+struct WCKPointer: Hashable {
     let value: String
-    let type: WCKVariableType = .ptr
+    let type: ObjectType = .ptr
+    
+    init(value: String) {
+        self.value = value
+    }
     
     init(data: inout Data) {
         let pointerLength = data.consume().reduce(0) { soFar, byte in
             return soFar << 8 | Int8(byte)
         }
         let pointerAddress = String(decoding: data.consume(first: Int(pointerLength)), as: UTF8.self)
-        value = "0x" + pointerAddress
-    }
-    
-    init(_ val: String) {
-        value = val
+        
+        self.value = "0x" + pointerAddress
     }
 }
 
-
-/// A time (number of seconds) is encoded as a string, with length on one byte.
-struct WCKTime: WCKObject {
-    let value: String
-    let type: WCKVariableType = .tim
+struct WCKTime: Hashable {
+    let value: Int
+    let type: ObjectType = .tim
+    init(value: Int) {
+        self.value = value
+    }
     
     init(data: inout Data) {
         let timeLength = data.consume().reduce(0) { soFar, byte in
             return soFar << 8 | Int8(byte)
         }
-        let timeValue = String(decoding: data.consume(first: Int(timeLength)), as: UTF8.self)
-        value = timeValue
-    }
-    
-    init(_ val: String) {
-        value = val
-    }
-}
-
-/// A hashtable contains type for keys, type for values, number of items in hashtable (integer on 4 bytes), and then keys and values of items.
-struct WCKHashtable: WCKObject {
-    let type: WCKVariableType = .htb
-    let keyType: WCKVariableType
-    let valueType: WCKVariableType
-    let count: WCKInteger
-    var items: [WCKVariableType: WCKObject] = [:]
-    
-    init?(data: inout Data) {
-        guard let newKeyType = WCKVariableType(rawValue: String(decoding:data.consume(first: 3), as: UTF8.self)) else { return nil }
-        guard let newValueType = WCKVariableType(rawValue: String(decoding:data.consume(first: 3), as: UTF8.self)) else { return nil }
         
-        keyType = newKeyType
-        valueType = newValueType
-        count = WCKInteger(data: &data)
+        self.value = Int(String(decoding: data.consume(first: Int(timeLength)), as: UTF8.self))!
+    }
+}
+
+struct WCKHashtable: Hashable {
+    static func == (lhs: WCKHashtable, rhs: WCKHashtable) -> Bool {
+        lhs.itemsCount == rhs.itemsCount
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(itemsCount)
+        hasher.combine(keysType.rawValue)
+        hasher.combine(valuesType.rawValue)
+    }
+    
+    let keysType: ObjectType
+    let valuesType: ObjectType
+    let itemsCount: WCKInteger
+    let value: [AnyHashable: Any]
+    let type: ObjectType = .htb
+    
+    init(keysType: ObjectType, valuesType: ObjectType, itemsCount: WCKInteger, value: [AnyHashable : Any]) {
+        self.keysType = keysType
+        self.valuesType = valuesType
+        self.itemsCount = itemsCount
+        self.value = value
+    }
+    
+    init(data: inout Data) {
+        // read the first type
+        self.keysType = ObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
+        
+        self.valuesType = ObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
+        
+        self.itemsCount = WCKInteger(data: &data)
+        
+        var newItems: [AnyHashable: Any] = [:]
+        for _ in 0..<self.itemsCount.value {
+        }
+        
+        self.value = newItems
+    }
+    
+    func munch(data: inout Data, for type: ObjectType) -> Any {
+        var byproduct: Any
+        switch type {
+        case .chr:
+            byproduct = WCKChar(data: &data)
+        case .int:
+            byproduct = WCKInteger(data: &data)
+        case .lon:
+            byproduct = WCKLongInteger(data: &data)
+        case .str:
+            byproduct = WCKString(data: &data)
+        case .buf:
+            byproduct = WCKBuffer(data: &data)
+        case .ptr:
+            byproduct = WCKPointer(data: &data)
+        case .tim:
+            byproduct = WCKTime(data: &data)
+        case .htb:
+            byproduct = WCKHashtable(data: &data)
+        case .hda:
+            byproduct = WCKHdata()
+        case .inf:
+            byproduct = WCKInfo()
+        case .inl:
+            byproduct = WCKInfoList()
+        case .arr:
+            byproduct = WCKArray()
+
+        }
+        return 0
     }
     
 }
 
-/// A hdata contains a path with hdata names, list of keys, number of set of objects, and then set of objects (path with pointers, then objects).
-struct WCKHdata: WCKObject {
-    let type: WCKVariableType = .hda
-    
-    
-}
+struct WCKHdata: Hashable {}
 
-struct WCKArray: WCKObject {
-    let type: WCKVariableType = .arr
-    let itemType: WCKVariableType
-    let length: WCKInteger
-    
-    
-}
+struct WCKInfo: Hashable {}
 
+struct WCKInfoList: Hashable {}
 
-// MARK: It seems that the weechat documentation doesn't really do infos anymore
-/// A info contains a name and a value (both are strings).
-//struct WCKInfo: WCKObject {
-//    let name: WCKString
-//    let value: WCKString
-//    let type: WCKVariableType = .inf
-//    
-//    init(name: WCKString, value: WCKString) {
-//        self.name = name
-//        self.value = value
-//    }
-//}
-
-/// A infolist contains a name, number of items, and then items (set of variables).
-//struct WCKInfolist: WCKObject {
-//    let name: WCKString
-//    let count: WCKInteger
-//    let items: [WCKInfoListItem]
-//    let type: WCKVariableType = .inl
-//    
-//}
-//
-///// An infolist is an item that belongs in an info list
-//struct WCKInfoListItem {
-//    let count: WCKInteger
-//    let name: WCKString
-//    let type: WCKVariableType
-//    let value: WCKObject
-//    
-//    
-//
-//}
+struct WCKArray: Hashable {}
