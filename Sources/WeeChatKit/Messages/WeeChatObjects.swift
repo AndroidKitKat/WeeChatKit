@@ -1,5 +1,5 @@
 //
-//  Objects.swift
+//  WeeChatObjects.swift
 //
 //
 //  Created by Michael Eisemann on 6/10/23.
@@ -7,28 +7,63 @@
 
 import Foundation
 
-enum ObjectType: String {
+enum WCKObjectType: String {
     case chr, int, lon, str, buf, ptr, tim, htb, hda, inf, inl, arr
+    
+    var type: Any.Type? {
+        switch self {
+        case .chr:
+            return WCKChar.self
+        case .int:
+            return WCKInteger.self
+        case .lon:
+            return WCKLongInteger.self
+        case .str:
+            return WCKString.self
+        case .buf:
+            return WCKBuffer.self
+        case .ptr:
+            return WCKPointer.self
+        case .tim:
+            return WCKTime.self
+        case .htb:
+            return WCKHashtable.self
+        case .hda:
+            return WCKHdata.self
+        case .inf:
+            return WCKInfo.self
+        case .inl:
+            return WCKInfoList.self
+        case .arr:
+            return WCKArray.self
+        }
+    }
+    
 }
 
 struct WCKChar: Hashable {
     let value: UInt8
-    let type: ObjectType = .chr
+    let type: WCKObjectType = .chr
+    let charValue: Character
     
     init(value: UInt8) {
         self.value = value
+        self.charValue = Character(UnicodeScalar(value))
     }
     
     init (data: inout Data) {
-        self.value = data.consume().reduce(0) { soFar, byte in
+        let newValue = data.consume().reduce(0) { soFar, byte in
             return soFar << 8 | UInt8(byte)
         }
+        
+        self.value = newValue
+        self.charValue = Character(UnicodeScalar(newValue))
     }
 }
 
 struct WCKInteger: Hashable {
     let value: Int32
-    let type: ObjectType = .int
+    let type: WCKObjectType = .int
     
     init(value: Int32) {
         self.value = value
@@ -43,7 +78,7 @@ struct WCKInteger: Hashable {
 
 struct WCKLongInteger: Hashable {
     let value: Int64
-    let type: ObjectType = .lon
+    let type: WCKObjectType = .lon
     
     init(value: Int64) {
         self.value = value
@@ -59,7 +94,7 @@ struct WCKLongInteger: Hashable {
 
 struct WCKString: Hashable {
     let value: String?
-    let type: ObjectType = .str
+    let type: WCKObjectType = .str
     
     init(value: String?) {
         self.value = value
@@ -83,7 +118,7 @@ struct WCKString: Hashable {
 
 struct WCKBuffer: Hashable {
     let value: [UInt8]?
-    let type: ObjectType = .buf
+    let type: WCKObjectType = .buf
     
     init(value: [UInt8]?) {
         self.value = value
@@ -109,7 +144,7 @@ struct WCKBuffer: Hashable {
 
 struct WCKPointer: Hashable {
     let value: String
-    let type: ObjectType = .ptr
+    let type: WCKObjectType = .ptr
     
     init(value: String) {
         self.value = value
@@ -127,7 +162,7 @@ struct WCKPointer: Hashable {
 
 struct WCKTime: Hashable {
     let value: Int
-    let type: ObjectType = .tim
+    let type: WCKObjectType = .tim
     init(value: Int) {
         self.value = value
     }
@@ -152,13 +187,13 @@ struct WCKHashtable: Hashable {
         hasher.combine(valuesType.rawValue)
     }
     
-    let keysType: ObjectType
-    let valuesType: ObjectType
+    let keysType: WCKObjectType
+    let valuesType: WCKObjectType
     let itemsCount: WCKInteger
     let value: [AnyHashable: Any]
-    let type: ObjectType = .htb
+    let type: WCKObjectType = .htb
     
-    init(keysType: ObjectType, valuesType: ObjectType, itemsCount: WCKInteger, value: [AnyHashable : Any]) {
+    init(keysType: WCKObjectType, valuesType: WCKObjectType, itemsCount: WCKInteger, value: [AnyHashable : Any]) {
         self.keysType = keysType
         self.valuesType = valuesType
         self.itemsCount = itemsCount
@@ -167,51 +202,25 @@ struct WCKHashtable: Hashable {
     
     init(data: inout Data) {
         // read the first type
-        self.keysType = ObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
+        let keysType = WCKObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
+        self.keysType = keysType
         
-        self.valuesType = ObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
+        let valuesType = WCKObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
+        self.valuesType = valuesType
         
         self.itemsCount = WCKInteger(data: &data)
-        
+
         var newItems: [AnyHashable: Any] = [:]
+        
         for _ in 0..<self.itemsCount.value {
+            let newKey = munch(data: &data, for: keysType) as! (any Hashable) // i need to turn Any into keysType
+            let newValue = munch(data: &data, for: valuesType)
+            
+            newItems[AnyHashable(newKey)] = newValue
         }
         
         self.value = newItems
     }
-    
-    func munch(data: inout Data, for type: ObjectType) -> Any {
-        var byproduct: Any
-        switch type {
-        case .chr:
-            byproduct = WCKChar(data: &data)
-        case .int:
-            byproduct = WCKInteger(data: &data)
-        case .lon:
-            byproduct = WCKLongInteger(data: &data)
-        case .str:
-            byproduct = WCKString(data: &data)
-        case .buf:
-            byproduct = WCKBuffer(data: &data)
-        case .ptr:
-            byproduct = WCKPointer(data: &data)
-        case .tim:
-            byproduct = WCKTime(data: &data)
-        case .htb:
-            byproduct = WCKHashtable(data: &data)
-        case .hda:
-            byproduct = WCKHdata()
-        case .inf:
-            byproduct = WCKInfo()
-        case .inl:
-            byproduct = WCKInfoList()
-        case .arr:
-            byproduct = WCKArray()
-
-        }
-        return 0
-    }
-    
 }
 
 struct WCKHdata: Hashable {}
@@ -221,3 +230,36 @@ struct WCKInfo: Hashable {}
 struct WCKInfoList: Hashable {}
 
 struct WCKArray: Hashable {}
+
+
+func munch(data: inout Data, for type: WCKObjectType) -> Any {
+    var byproduct: Any
+    switch type {
+    case .chr:
+        byproduct = WCKChar(data: &data)
+    case .int:
+        byproduct = WCKInteger(data: &data)
+    case .lon:
+        byproduct = WCKLongInteger(data: &data)
+    case .str:
+        byproduct = WCKString(data: &data)
+    case .buf:
+        byproduct = WCKBuffer(data: &data)
+    case .ptr:
+        byproduct = WCKPointer(data: &data)
+    case .tim:
+        byproduct = WCKTime(data: &data)
+    case .htb:
+        byproduct = WCKHashtable(data: &data)
+    case .hda:
+        byproduct = 0
+    case .inf:
+        byproduct = 0
+    case .inl:
+        byproduct = 0
+    case .arr:
+        byproduct = 0
+
+    }
+    return byproduct
+}

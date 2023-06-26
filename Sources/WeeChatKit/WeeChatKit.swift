@@ -70,7 +70,7 @@ class SocketHandler: ChannelInboundHandler {
         let messageLength: Int32 = bytes.consume(first: 4).reduce(0) { soFar, byte in
             return soFar << 8 | Int32(byte)
         }
-        print("Size I got: \(messageLength)")
+        print("Message length: \(messageLength)")
                 
         var messageData: Data
         let compressionFlag = bytes.consume().reduce(0) { soFar, byte in
@@ -78,11 +78,12 @@ class SocketHandler: ChannelInboundHandler {
         }
         switch compressionFlag {
         case 0:
-//            print("none")
+            print("Compression: None!")
             messageData = bytes
         default:
             print("Compressed data encountered!")
-            return
+            print("Only bad things can happen here!")
+            exit(EXIT_FAILURE)
 //        case 1:
 //            print("zlib")
 //            break
@@ -101,9 +102,62 @@ class SocketHandler: ChannelInboundHandler {
         
         let messageId: String = String(decoding: messageData.consume(first: Int(idLength)), as: UTF8.self)
         
-        print("Incoming message with id: \(messageId)")
+        print("Message id: \(messageId)")
         
-        // MARK: Message delegate
+        // MARK: Message consuming
+        
+        while (!messageData.isEmpty) {
+            let objTypeString: String = String(decoding: messageData.consume(first: 3), as: UTF8.self)
+            print("Object type is: \(objTypeString) <- there should be something here")
+            let objType = WCKObjectType(rawValue: objTypeString)
+
+            switch objType {
+            case .chr:
+                print("Char parsing")
+                print(WCKChar(data: &messageData).charValue)
+            case .int:
+                print("int parsing")
+                print(WCKInteger(data: &messageData).value)
+            case .lon:
+                print("long parsing")
+                print(WCKLongInteger(data: &messageData).value)
+            case .str:
+                print("string parsing")
+                print(WCKString(data: &messageData).value!)
+            case .buf:
+                print("buffer parsing")
+                print(WCKBuffer(data: &messageData).value!)
+            case .ptr:
+                print("pointer parsing")
+                print(WCKPointer(data: &messageData).value)
+            case .tim:
+                print("time parsing")
+                print(WCKTime(data: &messageData).value)
+            case .htb:
+                print("hashtable parsing")
+                print(WCKHashtable(data: &messageData).value as AnyObject)
+            case .hda:
+                print("hda parsing")
+                exit(EXIT_FAILURE)
+            case .inf:
+                print("inf parsing")
+                exit(EXIT_FAILURE)
+            case .inl:
+                print("inl parsing")
+                exit(EXIT_FAILURE)
+            case .arr:
+                print("array parsing")
+                exit(EXIT_FAILURE)
+            case .none:
+                print("something bad happened?")
+                
+            }
+        }
+        
+        
+        // now based on that, let's get it
+        // that is the effective loop for parsing, now we just have to actually it
+        
         
         print(String(decoding: messageData, as: UTF8.self))
         print("Done with that message")
