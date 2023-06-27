@@ -123,6 +123,7 @@ class SocketHandler: ChannelInboundHandler {
                 print(WCKLongInteger(data: &messageData).value)
             case .str:
                 print("string parsing")
+                // TODO: Handle NULL!
                 print(WCKString(data: &messageData).value!)
             case .buf:
                 print("buffer parsing")
