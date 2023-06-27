@@ -123,11 +123,12 @@ class SocketHandler: ChannelInboundHandler {
                 print(WCKLongInteger(data: &messageData).value)
             case .str:
                 print("string parsing")
-                // TODO: Handle NULL!
-                print(WCKString(data: &messageData).value!)
+                let newString: String = WCKString(data: &messageData).value ?? "NULL"
+                print(newString)
             case .buf:
                 print("buffer parsing")
-                print(WCKBuffer(data: &messageData).value!)
+                let newBuffer: [UInt8] = WCKBuffer(data: &messageData).value ?? []
+                print(newBuffer)
             case .ptr:
                 print("pointer parsing")
                 print(WCKPointer(data: &messageData).value)
@@ -148,7 +149,8 @@ class SocketHandler: ChannelInboundHandler {
                 exit(EXIT_FAILURE)
             case .arr:
                 print("array parsing")
-                exit(EXIT_FAILURE)
+                let newArray: WCKArray = WCKArray(data: &messageData)
+                print(newArray.items)
             case .none:
                 print("something bad happened?")
                 

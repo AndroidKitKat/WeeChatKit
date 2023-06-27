@@ -177,10 +177,12 @@ struct WCKTime: Hashable {
 }
 
 struct WCKHashtable: Hashable {
+    //TODO: This is not good
     static func == (lhs: WCKHashtable, rhs: WCKHashtable) -> Bool {
         lhs.itemsCount == rhs.itemsCount
     }
     
+    //TODO: Same with this 
     func hash(into hasher: inout Hasher) {
         hasher.combine(itemsCount)
         hasher.combine(keysType.rawValue)
@@ -204,7 +206,7 @@ struct WCKHashtable: Hashable {
         // read the first type
         let keysType = WCKObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
         self.keysType = keysType
-        
+    
         let valuesType = WCKObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
         self.valuesType = valuesType
         
@@ -229,7 +231,36 @@ struct WCKInfo: Hashable {}
 
 struct WCKInfoList: Hashable {}
 
-struct WCKArray: Hashable {}
+struct WCKArray: Hashable {
+    static func == (lhs: WCKArray, rhs: WCKArray) -> Bool {
+        lhs.itemsCount == rhs.itemsCount
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(itemsCount)
+        hasher.combine(itemsType)
+    }
+    
+    let itemsType: WCKObjectType
+    let itemsCount: WCKInteger
+    let items: [Any]
+    
+    init(data: inout Data) {
+        let memberType = WCKObjectType(rawValue: String(decoding: data.consume(first: 3), as: UTF8.self))!
+        self.itemsType = memberType
+         
+        let memberCount = WCKInteger(data: &data)
+        self.itemsCount = memberCount
+        
+        var newItems: [Any] = []
+        for _ in 0..<memberCount.value {
+            let newItem = munch(data: &data, for: itemsType)
+            newItems.append(newItem)
+        }
+        self.items = newItems
+    }
+    
+}
 
 
 func munch(data: inout Data, for type: WCKObjectType) -> Any {
