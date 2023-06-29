@@ -182,7 +182,7 @@ struct WCKHashtable: Hashable {
         lhs.itemsCount == rhs.itemsCount
     }
     
-    //TODO: Same with this 
+    //TODO: Same with this
     func hash(into hasher: inout Hasher) {
         hasher.combine(itemsCount)
         hasher.combine(keysType.rawValue)
@@ -225,7 +225,45 @@ struct WCKHashtable: Hashable {
     }
 }
 
-struct WCKHdata: Hashable {}
+struct WCKHdata {
+    
+    let hPath: WCKString
+    let hdataName: WCKString
+//    let keys: WCKString
+//    let keysName: WCKString // key:type
+//    let keysType: WCKString
+//    let itemsCount: WCKInteger
+//    let pointerPath: [WCKPointer]
+//    let values: Any // It's... complicated
+    
+    init(data: inout Data) {
+        let newHpath: WCKString = WCKString(data: &data)
+        print(newHpath)
+        let pointerPath = (newHpath.value ?? "" ).components(separatedBy: "/")
+        let hdataName: String? = String(pointerPath.last!)
+        let pointerCount:Int = pointerPath.count
+        print(pointerCount)
+        self.hdataName = WCKString(value: hdataName)
+        self.hPath = newHpath
+        
+        let keyString: String = WCKString(data: &data).value!
+        
+        let keys: [String] =  keyString.components(separatedBy: ",")
+        
+        for key in keys {
+            let keyComps = key.components(separatedBy: ":")
+            let keyName: String? = keyComps.first
+            let keyType: String? = keyComps.last
+            
+            
+        }
+        
+        
+        
+//        self.keys = newKeys
+        
+    }
+}
 
 struct WCKInfo: Hashable {}
 

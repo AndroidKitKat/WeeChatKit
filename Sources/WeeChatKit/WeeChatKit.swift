@@ -140,7 +140,7 @@ class SocketHandler: ChannelInboundHandler {
                 print(WCKHashtable(data: &messageData).value as AnyObject)
             case .hda:
                 print("hda parsing")
-                exit(EXIT_FAILURE)
+                WCKHdata(data: &messageData)
             case .inf:
                 print("inf parsing")
                 exit(EXIT_FAILURE)
