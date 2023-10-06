@@ -238,11 +238,11 @@ struct WCKHdata {
     
     init(data: inout Data) {
         let newHpath: WCKString = WCKString(data: &data)
-        print(newHpath)
-        let pointerPath = (newHpath.value ?? "" ).components(separatedBy: "/")
-        let hdataName: String? = String(pointerPath.last!)
-        let pointerCount:Int = pointerPath.count
-        print(pointerCount)
+        print("newHpath: \(newHpath)")
+        let hPathComps = (newHpath.value ?? "" ).components(separatedBy: "/")
+        let hdataName: String? = String(hPathComps.last!)
+        let hPathCount:Int = hPathComps.count
+        print("hPathCount: \(hPathCount)")
         self.hdataName = WCKString(value: hdataName)
         self.hPath = newHpath
         
@@ -250,19 +250,59 @@ struct WCKHdata {
         
         let keys: [String] =  keyString.components(separatedBy: ",")
         
-        for key in keys {
-            let keyComps = key.components(separatedBy: ":")
-            let keyName: String? = keyComps.first
-            let keyType: String? = keyComps.last
-            
-            
-        }
+        let objCount: Int32 = WCKInteger(data: &data).value
+        print("objcount = \(objCount) & keycount = \(keys.count)")
         
+        
+        for _ in 0..<objCount {
+            var pointers: [WCKPointer] = []
+            // eat the pointers
+            for _ in 0..<hPathCount {
+                pointers.append(WCKPointer(data: &data))
+            }
+            // eat the keys ( THIS CAN BE OPTIMIZED)
+            for key in keys {
+                let keyComps = key.components(separatedBy: ":")
+                let keyName: String? = keyComps.first
+                let keyType: String? = keyComps.last
+                let wckKeyType = WCKObjectType(rawValue: keyType!)
+                switch wckKeyType {
+                case .chr:
+                    print(WCKChar(data: &data))
+                case .int:
+                    print(WCKInteger(data: &data))
+                case .lon:
+                    print(WCKLongInteger(data: &data))
+                case .str:
+                    print(WCKString(data: &data))
+                case .buf:
+                    print(WCKBuffer(data: &data))
+                case .ptr:
+                    print(WCKPointer(data: &data))
+                case .tim:
+                    print(WCKTime(data: &data))
+                case .htb:
+                    print(WCKHashtable(data: &data))
+                case .hda:
+                    print(WCKHdata(data: &data))
+                case .inf:
+                    print("inf parsing")
+                    exit(EXIT_FAILURE)
+                case .inl:
+                    print("inl parsing")
+                    exit(EXIT_FAILURE)
+                case .arr:
+                    print(WCKArray(data: &data))
+                case nil:
+                    exit(EXIT_FAILURE)
+                }
+            }
+        }
+    }
         
         
 //        self.keys = newKeys
         
-    }
 }
 
 struct WCKInfo: Hashable {}
