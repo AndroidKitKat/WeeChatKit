@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "81201AA7-BBFE-4275-B760-331FC5BCE371"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "99DDB609-DAEA-4D64-90F4-6FAFB24F1548"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../WeeChatKit/Sources/WeeChatKit/Messages/WeeChatObjects.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "344"
+            endingLineNumber = "344"
+            landmarkName = "munch(data:for:)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "9CF3D8C2-4631-479E-960E-623632E45CFD"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../WeeChatKit/Sources/WeeChatKit/WeeChatKit.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "111"
+            endingLineNumber = "111"
+            landmarkName = "channelRead(context:data:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "9CF3D8C2-4631-479E-960E-623632E45CFD - 5e53dc138d374461"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "WeeChatKit.SocketHandler.channelRead(context: NIOCore.ChannelHandlerContext, data: NIOCore.NIOAny) -&gt; ()"
+                  moduleName = "weechatkit-driver-3"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/me/Developer/WeeChatKit/Sources/WeeChatKit/WeeChatKit.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "111"
+                  endingLineNumber = "111"
+                  offsetFromSymbolStart = "3180">
+               </Location>
+               <Location
+                  uuid = "9CF3D8C2-4631-479E-960E-623632E45CFD - 5e53dc138d374461"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "WeeChatKit.SocketHandler.channelRead(context: NIOCore.ChannelHandlerContext, data: NIOCore.NIOAny) -&gt; ()"
+                  moduleName = "weechatkit-driver-3"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/me/Developer/WeeChatKit/Sources/WeeChatKit/WeeChatKit.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "111"
+                  endingLineNumber = "111"
+                  offsetFromSymbolStart = "3176">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6C529C2A-E6CE-41A2-B656-D81690C93439"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../WeeChatKit/Sources/WeeChatKit/WeeChatKit.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "110"
+            endingLineNumber = "110"
+            landmarkName = "channelRead(context:data:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "85D20405-7964-413B-82F5-75BC1D56A445"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../WeeChatKit/Sources/WeeChatKit/WeeChatKit.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "67"
+            endingLineNumber = "67"
+            landmarkName = "channelRead(context:data:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

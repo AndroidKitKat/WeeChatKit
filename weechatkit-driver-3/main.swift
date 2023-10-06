@@ -16,7 +16,7 @@ func main() async throws {
     let communicator = WeeChatKit(eventLoopGroup: eventLoopGroup)
 
     // Connect to the server
-    try await communicator.connect(to: "localhost", on: 8901)
+    try await communicator.connect(to: "localhost", on: 9001)
     print("Connected to server. You can start sending messages.")
 
     // Start receiving messages in the background
@@ -34,12 +34,14 @@ func main() async throws {
     }
 
     // Send messages until user decides to quit
+    print(">>> ", terminator: "")
     while let userInput = readLine(strippingNewline: true) {
         if userInput.lowercased() == "quit" {
             break
         }
-
-        let message = userInput + "\n"
+        
+        
+        let message = "(wck) " + userInput + "\n"
         let messageData = ByteBuffer(bytes: Array(message.utf8))
         do {
             try await communicator.sendData(messageData)
@@ -48,6 +50,7 @@ func main() async throws {
             print("Error sending data: \(error)")
             exit(5)
         }
+        print(">>> ", terminator: "")
     }
 
     // Disconnect from the server

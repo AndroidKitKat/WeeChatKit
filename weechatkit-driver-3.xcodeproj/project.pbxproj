@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		8C00BB552A3290A60072DFB4 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C00BB542A3290A60072DFB4 /* main.swift */; };
-		8C00BB5D2A3290BA0072DFB4 /* WeeChatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8C00BB5C2A3290BA0072DFB4 /* WeeChatKit */; };
+		8C740BBF2AD0768B00E6CA16 /* WeeChatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8C740BBE2AD0768B00E6CA16 /* WeeChatKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,7 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8C00BB5D2A3290BA0072DFB4 /* WeeChatKit in Frameworks */,
+				8C740BBF2AD0768B00E6CA16 /* WeeChatKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,7 +81,7 @@
 			);
 			name = "weechatkit-driver-3";
 			packageProductDependencies = (
-				8C00BB5C2A3290BA0072DFB4 /* WeeChatKit */,
+				8C740BBE2AD0768B00E6CA16 /* WeeChatKit */,
 			);
 			productName = "weechatkit-driver-3";
 			productReference = 8C00BB512A3290A60072DFB4 /* weechatkit-driver-3 */;
@@ -306,7 +306,7 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8C00BB5C2A3290BA0072DFB4 /* WeeChatKit */ = {
+		8C740BBE2AD0768B00E6CA16 /* WeeChatKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WeeChatKit;
 		};
